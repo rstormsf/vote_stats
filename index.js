@@ -1,6 +1,7 @@
+require("dotenv").config();
 const Web3 = require("web3");
-
-const web3 = new Web3("https://core.poa.network");
+const { NETWORK, VOTE_ID } = process.env;
+const web3 = new Web3(`https://${NETWORK}.poa.network`);
 
 const ABI = require("./abi.json");
 const metaABI = require("./meta.json");
@@ -13,17 +14,13 @@ const metaContract = new web3.eth.Contract(metaABI, metaAddr);
 async function main() {
   contract
     .getPastEvents("Vote", {
-      filter: { id: 56 },
+      filter: { id: VOTE_ID },
       fromBlock: 0,
       toBlock: "latest",
     })
     .then(async (events) => {
       // console.log(events);
-      let validators = getValidators("core");
       for (let event of events) {
-        let validator =
-          validators[event.returnValues.voterMiningKey] ||
-          event.returnValues.voterMiningKey;
         const name = await metaContract.methods
           .validators(event.returnValues.voterMiningKey)
           .call();
